@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1,
+               viewport-fit=cover">
+
+<title>AFL Video Player</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  font-family: Arial, sans-serif;
+}
+
+/* MAIN PLAYER */
+
+#player {
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+/* VIDEO */
+
+#videoWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+#vid {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  object-fit: contain;
+}
+
+/* BUTTON BAR */
+
+#bar {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  background: #111;
+}
+
+#bar button {
+  border: 0;
+  margin: 0;
+  padding: 0;
+
+  background: #1a1a1a;
+  color: #999;
+
+  font-size: 15px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* QUARTER BUTTONS */
+
+.quarter {
+  flex: 1;
+}
+
+.quarter.active {
+  background: #0073e6;
+  color: #fff;
+}
+
+/* FULLSCREEN BUTTON */
+
+#fsButton {
+  width: 60px;
+  min-width: 60px;
+
+  background: #222 !important;
+  color: #fff !important;
+
+  font-size: 24px !important;
+}
+
+/* =========================================
+   TRUE FULLSCREEN
+   ========================================= */
+
+#player:fullscreen {
+  width: 100vw;
+  height: 100vh;
+
+  background: #000;
+
+  display: flex;
+  flex-direction: column;
+}
+
+#player:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+
+  background: #000;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* VIDEO AREA IN FULLSCREEN */
+
+#player:fullscreen #videoWrap {
+  flex: 1;
+
+  width: 100vw;
+  height: auto;
+
+  min-height: 0;
+
+  aspect-ratio: auto;
+}
+
+#player:-webkit-full-screen #videoWrap {
+  flex: 1;
+
+  width: 100vw;
+  height: auto;
+
+  min-height: 0;
+
+  aspect-ratio: auto;
+}
+
+/* VIDEO IN FULLSCREEN */
+
+#player:fullscreen #vid {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+#player:-webkit-full-screen #vid {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+/* BUTTON BAR IN FULLSCREEN */
+
+#player:fullscreen #bar {
+  flex: 0 0 48px;
+}
+
+#player:-webkit-full-screen #bar {
+  flex: 0 0 48px;
+}
+
+/* LANDSCAPE PHONE */
+
+@media (orientation: landscape) {
+
+  #player:fullscreen #bar {
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  #player:-webkit-full-screen #bar {
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- =========================================
+     PLAYER
+     ========================================= -->
+
+<div id="player">
+
+  <!-- VIDEO -->
+
+  <div id="videoWrap">
+
+    <video
+      id="vid"
+      controls
+      playsinline
+      webkit-playsinline
+      preload="metadata"
+
+      src="https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/f552906434954ad5bdadf12380d35c4e/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/7041471b658e4b4780b70781edde0e32/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8">
+      
+    </video>
+
+  </div>
+
+
+  <!-- BUTTON BAR -->
+
+  <div id="bar">
+
+    <button
+      class="quarter active"
+      id="b0"
+      onclick="go(0)">
+      Q1
+    </button>
+
+    <button
+      class="quarter"
+      id="b1"
+      onclick="go(1)">
+      Q2
+    </button>
+
+    <button
+      class="quarter"
+      id="b2"
+      onclick="go(2)">
+      Q3
+    </button>
+
+    <button
+      class="quarter"
+      id="b3"
+      onclick="go(3)">
+      Q4
+    </button>
+
+    <!-- FULLSCREEN -->
+
+    <button
+      id="fsButton"
+      onclick="toggleFullscreen()"
+      title="Fullscreen">
+      ⛶
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   VIDEO STREAMS
+   ========================================= */
+
+const streams = [
+
+  /* Q1 */
+
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/f552906434954ad5bdadf12380d35c4e/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/7041471b658e4b4780b70781edde0e32/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
+
+  /* Q2 */
+
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/07c89172716f42c8bda3f6f8ee150e10/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/713c3a8b292c4c4088a27a3f38948e93/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
+
+  /* Q3 */
+
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/63dfc643ac1d40878097e73abf1d6734/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/25cd9021cb0e4d0a8ffbc4ee405ac4db/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
+
+  /* Q4 */
+
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/642654a2922a4f1e82b478f8a082d3d1/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/177f893fee0140069a51c33c82a328ea/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8"
+
+];
+
+
+/* =========================================
+   CHANGE QUARTER
+   ========================================= */
+
+function go(num) {
+
+  const video = document.getElementById("vid");
+
+  /*
+    Remember whether the video was playing
+    before changing streams.
+  */
+
+  const wasPlaying = !video.paused;
+
+  /*
+    Change video source.
+  */
+
+  video.src = streams[num];
+
+  video.load();
+
+  /*
+    Start playing again if it was already playing.
+  */
+
+  if (wasPlaying) {
+
+    video.play().catch(function() {
+      console.log("Playback requires user interaction.");
+    });
+
+  }
+
+  /*
+    Update button colours.
+  */
+
+  for (let i = 0; i < 4; i++) {
+
+    const button =
+      document.getElementById("b" + i);
+
+    if (i === num) {
+
+      button.classList.add("active");
+
+    } else {
+
+      button.classList.remove("active");
+
+    }
+
+  }
+
+}
+
+
+/* =========================================
+   FULLSCREEN
+   ========================================= */
+
+async function toggleFullscreen() {
+
+  const player =
+    document.getElementById("player");
+
+  /*
+    Check whether fullscreen is currently active.
+  */
+
+  const fullscreenActive =
+    document.fullscreenElement ||
+    document.webkitFullscreenElement;
+
+  /*
+    EXIT FULLSCREEN
+  */
+
+  if (fullscreenActive) {
+
+    try {
+
+      if (document.exitFullscreen) {
+
+        await document.exitFullscreen();
+
+      }
+
+      else if (document.webkitExitFullscreen) {
+
+        document.webkitExitFullscreen();
+
+      }
+
+    }
+
+    catch (error) {
+
+      console.log(
+        "Could not exit fullscreen:",
+        error
+      );
+
+    }
+
+    return;
+  }
+
+
+  /*
+    ENTER FULLSCREEN
+  */
+
+  try {
+
+    /*
+      Modern Android / Chrome
+    */
+
+    if (player.requestFullscreen) {
+
+      await player.requestFullscreen({
+        navigationUI: "hide"
+      });
+
+    }
+
+    /*
+      Older WebKit browsers
+    */
+
+    else if (player.webkitRequestFullscreen) {
+
+      player.webkitRequestFullscreen();
+
+    }
+
+    /*
+      Some mobile browsers can fullscreen
+      the video directly.
+    */
+
+    else {
+
+      const video =
+        document.getElementById("vid");
+
+      if (video.webkitEnterFullscreen) {
+
+        video.webkitEnterFullscreen();
+
+      }
+
+      else {
+
+        alert(
+          "Fullscreen is not supported by this browser."
+        );
+
+      }
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.log(
+      "Fullscreen request failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   FULLSCREEN BUTTON ICON
+   ========================================= */
+
+function updateFullscreenButton() {
+
+  const button =
+    document.getElementById("fsButton");
+
+  const isFullscreen =
+    !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement
+    );
+
+  if (isFullscreen) {
+
+    button.textContent = "✕";
+    button.title = "Exit fullscreen";
+
+  }
+
+  else {
+
+    button.textContent = "⛶";
+    button.title = "Fullscreen";
+
+  }
+
+}
+
+
+/* =========================================
+   FULLSCREEN EVENTS
+   ========================================= */
+
+document.addEventListener(
+  "fullscreenchange",
+  updateFullscreenButton
+);
+
+document.addEventListener(
+  "webkitfullscreenchange",
+  updateFullscreenButton
+);
+
+</script>
+
+</body>
+</html>
