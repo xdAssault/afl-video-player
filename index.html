@@ -2,154 +2,242 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
 
 <title>AFL Video Player</title>
 
 <style>
-    * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-    }
 
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        min-height: 100%;
-        background: #000;
-        font-family: Arial, sans-serif;
-        overflow-x: hidden;
-    }
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-    body {
-        display: flex;
-        justify-content: center;
-    }
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
 
-    #player {
-        width: 100%;
-        max-width: 1000px;
-        background: #000;
-        color: white;
-    }
+body {
+    overflow: hidden;
+}
 
-    #videoWrap {
-        position: relative;
-        width: 100%;
-        background: #000;
-    }
+/* =========================
+   PLAYER
+========================= */
 
-    video {
-        display: block;
-        width: 100%;
-        height: auto;
-        min-height: 200px;
-        background: #000;
-        object-fit: contain;
+#player {
+    width: 100%;
+    max-width: 1100px;
+    margin: auto;
+    background: #000;
+}
+
+#videoWrap {
+    width: 100%;
+    background: #000;
+    position: relative;
+}
+
+video {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #000;
+    object-fit: contain;
+}
+
+/* =========================
+   NORMAL CONTROLS
+========================= */
+
+#controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background: #111;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 11px 15px;
+    background: #292929;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(.96);
+}
+
+button.active {
+    background: #e31b23;
+}
+
+#fullscreenBtn {
+    margin-left: auto;
+    font-size: 20px;
+    background: #333;
+}
+
+#openFullscreenBtn {
+    width: 100%;
+    background: #e31b23;
+    font-size: 16px;
+    padding: 14px;
+}
+
+#message {
+    text-align: center;
+    padding: 8px;
+    background: #111;
+    color: #aaa;
+    font-size: 12px;
+}
+
+
+/* =========================
+   STANDALONE MODE
+========================= */
+
+body.standalone {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+body.standalone #player {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+}
+
+body.standalone #videoWrap {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.standalone video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+}
+
+/* Hide ALL custom controls in standalone mode */
+
+body.standalone #controls {
+    display: none;
+}
+
+body.standalone #message {
+    display: none;
+}
+
+
+/* =========================
+   TRUE FULLSCREEN
+========================= */
+
+#player:fullscreen,
+#player:-webkit-full-screen {
+
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+
+    background: #000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+#player:fullscreen #videoWrap,
+#player:-webkit-full-screen #videoWrap {
+
+    width: 100vw;
+    height: 100vh;
+
+}
+
+#player:fullscreen video,
+#player:-webkit-full-screen video {
+
+    width: 100vw;
+    height: 100vh;
+
+    object-fit: contain;
+
+}
+
+#player:fullscreen #controls,
+#player:-webkit-full-screen #controls {
+
+    position: absolute;
+
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    z-index: 20;
+
+    background: rgba(0,0,0,.75);
+
+}
+
+#player:fullscreen #message,
+#player:-webkit-full-screen #message {
+
+    display: none;
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+    button {
+        font-size: 14px;
+        padding: 10px 13px;
     }
 
     #controls {
-        display: flex;
-        gap: 8px;
-        padding: 10px;
-        background: #111;
-        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px;
     }
 
-    button {
-        border: 0;
-        border-radius: 8px;
-        padding: 11px 16px;
-        background: #292929;
-        color: white;
-        font-size: 15px;
-        font-weight: bold;
-        cursor: pointer;
-    }
+}
 
-    button:active {
-        transform: scale(0.96);
-    }
-
-    button.active {
-        background: #e31b23;
-    }
-
-    #fullscreenBtn {
-        margin-left: auto;
-        background: #333;
-        font-size: 20px;
-        padding: 7px 14px;
-    }
-
-    #message {
-        padding: 8px 12px;
-        background: #111;
-        color: #aaa;
-        font-size: 12px;
-        text-align: center;
-    }
-
-    /* REAL FULLSCREEN */
-    #player:fullscreen,
-    #player:-webkit-full-screen {
-        width: 100vw;
-        height: 100vh;
-        max-width: none;
-        background: #000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    #player:fullscreen #videoWrap,
-    #player:-webkit-full-screen #videoWrap {
-        width: 100vw;
-        height: 100vh;
-    }
-
-    #player:fullscreen video,
-    #player:-webkit-full-screen video {
-        width: 100vw;
-        height: 100vh;
-        object-fit: contain;
-    }
-
-    #player:fullscreen #controls,
-    #player:-webkit-full-screen #controls {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 10;
-        opacity: 0.9;
-    }
-
-    #player:fullscreen #message,
-    #player:-webkit-full-screen #message {
-        display: none;
-    }
-
-    /* Mobile fullscreen layout */
-    @media (max-width: 600px) {
-        button {
-            padding: 10px 13px;
-            font-size: 14px;
-        }
-
-        #controls {
-            gap: 6px;
-            padding: 8px;
-        }
-
-        #fullscreenBtn {
-            font-size: 19px;
-        }
-    }
 </style>
 </head>
+
 
 <body>
 
@@ -167,24 +255,62 @@
 
     </div>
 
+
     <div id="controls">
 
-        <button id="q1" onclick="go(0)">Q1</button>
-        <button id="q2" onclick="go(1)">Q2</button>
-        <button id="q3" onclick="go(2)">Q3</button>
-        <button id="q4" onclick="go(3)">Q4</button>
+        <button
+            id="q1"
+            onclick="go(0)">
+            Q1
+        </button>
 
-        <button id="fullscreenBtn" onclick="fullscreenPlayer()">⛶</button>
+        <button
+            id="q2"
+            onclick="go(1)">
+            Q2
+        </button>
+
+        <button
+            id="q3"
+            onclick="go(2)">
+            Q3
+        </button>
+
+        <button
+            id="q4"
+            onclick="go(3)">
+            Q4
+        </button>
+
+
+        <button
+            id="fullscreenBtn"
+            onclick="fullscreenPlayer()">
+            ⛶
+        </button>
+
+
+        <button
+            id="openFullscreenBtn"
+            onclick="openFullscreenPlayer()">
+            📱 Fullscreen Video
+        </button>
 
     </div>
 
+
     <div id="message">
-        Tap ⛶ for fullscreen
+        Choose Q1–Q4, then tap 📱 Fullscreen Video
     </div>
 
 </div>
 
+
 <script>
+
+/* ==========================================
+   Q1–Q4 VIDEO LINKS
+========================================== */
 
 const streams = [
 
@@ -202,20 +328,22 @@ const streams = [
 
 ];
 
-const video = document.getElementById("vid");
-const player = document.getElementById("player");
-const message = document.getElementById("message");
 
-let currentQuarter = 0;
+const video =
+    document.getElementById("vid");
+
+const player =
+    document.getElementById("player");
+
+const message =
+    document.getElementById("message");
 
 
-/* =========================
+/* ==========================================
    CHANGE QUARTER
-========================= */
+========================================== */
 
 function go(index) {
-
-    currentQuarter = index;
 
     video.pause();
 
@@ -226,39 +354,41 @@ function go(index) {
     updateButtons(index);
 
     video.play().catch(() => {
-        // Some browsers require the user to press Play.
+
+        message.textContent =
+            "Tap Play to start the video.";
+
     });
+
 }
 
 
-/* =========================
-   BUTTON HIGHLIGHT
-========================= */
+/* ==========================================
+   HIGHLIGHT BUTTON
+========================================== */
 
 function updateButtons(index) {
 
     for (let i = 1; i <= 4; i++) {
+
         document
             .getElementById("q" + i)
             .classList.remove("active");
+
     }
 
     document
         .getElementById("q" + (index + 1))
         .classList.add("active");
+
 }
 
 
-/* =========================
-   FULLSCREEN
-========================= */
+/* ==========================================
+   NORMAL FULLSCREEN
+========================================== */
 
 async function fullscreenPlayer() {
-
-    /*
-       METHOD 1:
-       Try normal Fullscreen API.
-    */
 
     try {
 
@@ -275,21 +405,21 @@ async function fullscreenPlayer() {
                 navigationUI: "hide"
             });
 
-            message.textContent = "Fullscreen enabled";
             return;
+
         }
 
     } catch (error) {
 
-        console.log("Standard fullscreen blocked:", error);
+        console.log(
+            "Fullscreen blocked:",
+            error
+        );
 
     }
 
 
-    /*
-       METHOD 2:
-       iPhone / Safari / WebKit
-    */
+    /* WebKit */
 
     try {
 
@@ -297,19 +427,17 @@ async function fullscreenPlayer() {
 
             player.webkitRequestFullscreen();
             return;
+
         }
 
     } catch (error) {
 
-        console.log("WebKit fullscreen blocked:", error);
+        console.log(error);
 
     }
 
 
-    /*
-       METHOD 3:
-       Try fullscreen directly on the video.
-    */
+    /* Video fullscreen */
 
     try {
 
@@ -317,78 +445,161 @@ async function fullscreenPlayer() {
 
             video.webkitEnterFullscreen();
             return;
+
         }
 
     } catch (error) {
 
-        console.log("Video fullscreen blocked:", error);
+        console.log(error);
 
     }
 
 
-    /*
-       METHOD 4:
-       Google Sites iframe fallback.
+    openFullscreenPlayer();
 
-       If Google Sites refuses fullscreen, open this
-       GitHub Pages player as a standalone webpage.
-    */
-
-    openStandalonePlayer();
 }
 
 
-/* =========================
-   STANDALONE FALLBACK
-========================= */
+/* ==========================================
+   GOOGLE SITES → STANDALONE PLAYER
+========================================== */
 
-function openStandalonePlayer() {
+function openFullscreenPlayer() {
 
-    /*
-       If the page is already standalone,
-       don't keep opening new tabs.
-    */
-
-    if (window.top === window.self) {
-
-        message.textContent =
-            "Your browser does not allow fullscreen.";
-
-        return;
-    }
+    let url =
+        window.location.href;
 
 
     /*
-       Open the GitHub Pages page outside
-       the Google Sites iframe.
+       Remove an existing fullscreen parameter
+       so we don't create ?fullscreen=1&fullscreen=1
     */
 
-    const url = window.location.href;
-
-    const newWindow = window.open(
-        url,
-        "_blank"
-    );
+    url =
+        url.replace(
+            /[?&]fullscreen=1/g,
+            ""
+        );
 
 
     /*
-       If popup/new tab was blocked,
-       try navigating the current frame.
+       Tell the standalone page to enter
+       video-only mode.
     */
+
+    const separator =
+        url.includes("?")
+        ? "&"
+        : "?";
+
+
+    url =
+        url +
+        separator +
+        "fullscreen=1";
+
+
+    /*
+       Open outside Google Sites.
+    */
+
+    const newWindow =
+        window.open(
+            url,
+            "_blank"
+        );
+
 
     if (!newWindow) {
 
         message.textContent =
-            "Tap the browser menu and open this page directly.";
+            "Popup blocked. Open the GitHub Pages URL directly.";
 
     }
 
 }
 
 
-/* =========================
+/* ==========================================
+   ENABLE STANDALONE MODE
+========================================== */
+
+function checkStandaloneMode() {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    if (
+        params.get("fullscreen") === "1"
+    ) {
+
+        /*
+           Hide Q1-Q4 and custom buttons.
+           Keep ONLY video + native video controls.
+        */
+
+        document.body
+            .classList.add("standalone");
+
+
+        /*
+           Give the video maximum screen size.
+        */
+
+        video.style.width = "100vw";
+        video.style.height = "100vh";
+        video.style.objectFit = "contain";
+
+
+        /*
+           Try browser fullscreen.
+
+           Android may reject automatic fullscreen
+           because it requires a user gesture.
+        */
+
+        setTimeout(() => {
+
+            try {
+
+                if (
+                    document.documentElement
+                        .requestFullscreen
+                ) {
+
+                    document.documentElement
+                        .requestFullscreen({
+                            navigationUI: "hide"
+                        })
+                        .catch(() => {
+
+                            console.log(
+                                "Tap the video fullscreen control."
+                            );
+
+                        });
+
+                }
+
+            } catch (error) {
+
+                console.log(error);
+
+            }
+
+        }, 300);
+
+    }
+
+}
+
+
+/* ==========================================
    FULLSCREEN CHANGE
-========================= */
+========================================== */
 
 document.addEventListener(
     "fullscreenchange",
@@ -396,13 +607,9 @@ document.addEventListener(
 
         if (document.fullscreenElement) {
 
-            message.textContent =
-                "Fullscreen enabled";
-
-        } else {
-
-            message.textContent =
-                "Tap ⛶ for fullscreen";
+            console.log(
+                "Fullscreen active"
+            );
 
         }
 
@@ -410,11 +617,18 @@ document.addEventListener(
 );
 
 
-/* =========================
-   INITIAL VIDEO
-========================= */
+/* ==========================================
+   START Q1
+========================================== */
 
 go(0);
+
+
+/* ==========================================
+   CHECK URL
+========================================== */
+
+checkStandaloneMode();
 
 </script>
 
