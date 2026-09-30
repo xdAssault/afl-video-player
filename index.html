@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AFL Mobile Player</title>
 
-<!-- Include HLS library for cross-browser mobile playback (Android & Chrome) -->
+<!-- Include HLS library for cross-browser mobile playback (Android & Chrome mobile) -->
 <script src="https://jsdelivr.net"></script>
 
 <style>
 * {
   box-sizing: border-box;
-  -webkit-user-select: none; /* Prevents text selection highlights on mobile */
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -57,11 +57,11 @@ body {
 #bar {
   display: flex;
   width: 100%;
-  height: 60px; /* Slightly taller for mobile thumb targets */
+  height: 60px; /* Oversized touch targets for mobile thumbs */
   background: #111;
   flex-shrink: 0;
   border-top: 1px solid #222;
-  padding-bottom: env(safe-area-inset-bottom); /* iOS home bar protection */
+  padding-bottom: env(safe-area-inset-bottom); /* iOS dynamic home bar mapping */
 }
 
 #bar button {
@@ -85,7 +85,7 @@ body {
 
 /* ACTIVE QUARTER STATE */
 #bar button.active {
-  background: #007aff; /* Apple standard system blue */
+  background: #007aff;
   color: #fff;
 }
 
@@ -116,7 +116,7 @@ body {
 
   <!-- VIDEO WRAPPER -->
   <div id="videoWrap">
-    <!-- playsinline stops iOS from automatically taking over the screen natively -->
+    <!-- playsinline forces Safari mobile to stream inline instead of breaking into native players -->
     <video
       id="vid"
       controls
@@ -138,13 +138,13 @@ body {
 
 <script>
 /* =========================================
-   STREAM DATA SOURCES
+   STREAM DATA SOURCES (Your 4 Exact Links)
    ========================================= */
 const streams = [
-  "https://akamaized.net",
-  "https://akamaized.net",
-  "https://akamaized.net",
-  "https://akamaized.net"
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/f552906434954ad5bdadf12380d35c4e/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/7041471b658e4b4780b70781edde0e32/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/07c89172716f42c8bda3f6f8ee150e10/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/713c3a8b292c4c4088a27a3f38948e93/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/63dfc643ac1d40878097e73abf1d6734/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/25cd9021cb0e4d0a8ffbc4ee405ac4db/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
+  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/642654a2922a4f1e82b478f8a082d3d1/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/177f893fee0140069a51c33c82a328ea/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8"
 ];
 
 let hls = null;
@@ -172,8 +172,8 @@ function loadStream(url, autoPlay = false) {
   }
 }
 
-// Initialise Q1
-loadStream(streams, false);
+// Initialise index 0 (Quarter 1 link) on startup
+loadStream(streams[0], false);
 
 /* =========================================
    CHANGE QUARTER
@@ -220,7 +220,7 @@ async function toggleFullscreen() {
       if (video.webkitEnterFullscreen) {
         video.webkitEnterFullscreen();
       } else {
-        alert("Fullscreen is not supported on this device.");
+        alert("Fullscreen is not supported on this device layout context.");
       }
     }
   } catch (error) {
@@ -237,7 +237,7 @@ video.addEventListener('touchend', function (e) {
   const tapLength = currentTime - lastTap;
   
   if (tapLength < 300 && tapLength > 0) {
-    e.preventDefault(); // Stop native browser scaling zooms
+    e.preventDefault(); 
     toggleFullscreen();
   }
   lastTap = currentTime;
