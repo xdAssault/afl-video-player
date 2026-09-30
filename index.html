@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AFL Mobile Player</title>
 
-<!-- Include HLS library for cross-browser mobile playback (Android & Chrome mobile) -->
-<script src="https://jsdelivr.net"></script>
-
 <style>
 * {
   box-sizing: border-box;
@@ -36,32 +33,77 @@ body {
   background: #000;
 }
 
-/* VIDEO WINDOW */
+/* VIDEO WRAPPER / CONTAINER SLOT */
 #videoWrap {
   position: relative;
   width: 100%;
   flex: 1;
   min-height: 0;
-  background: #000;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-#vid {
-  display: block;
+/* LAUNCH CARD INTERFACE */
+.launch-card {
+  text-align: center;
+  background: #1c1c1e;
+  border-radius: 16px;
+  padding: 30px 20px;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: #000;
+  max-width: 320px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  border: 1px solid #2c2c2e;
+}
+
+.launch-card h2 {
+  color: #fff;
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.launch-card p {
+  color: #8e8e93;
+  font-size: 14px;
+  margin: 0 0 25px 0;
+  line-height: 1.4;
+}
+
+/* ACTION BUTTON */
+#launchBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff3b30; /* YouTube Red color */
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 12px;
+  width: 100%;
+  transition: transform 0.1s ease, background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#launchBtn:active {
+  transform: scale(0.97);
+  background-color: #e02e24;
 }
 
 /* MOBILE NAV BAR */
 #bar {
   display: flex;
   width: 100%;
-  height: 60px; /* Oversized touch targets for mobile thumbs */
+  height: 60px; 
   background: #111;
   flex-shrink: 0;
   border-top: 1px solid #222;
-  padding-bottom: env(safe-area-inset-bottom); /* iOS dynamic home bar mapping */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 #bar button {
@@ -89,16 +131,6 @@ body {
   color: #fff;
 }
 
-/* FULLSCREEN OVERRIDES */
-#player:fullscreen {
-  width: 100vw;
-  height: 100vh;
-}
-#player:-webkit-full-screen {
-  width: 100vw;
-  height: 100vh;
-}
-
 /* LANDSCAPE ORIENTATION CONFIGURATION */
 @media (orientation: landscape) {
   #bar {
@@ -107,6 +139,24 @@ body {
   #bar button {
     font-size: 14px;
   }
+  #videoWrap {
+    padding: 10px;
+  }
+  .launch-card {
+    padding: 15px 20px;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+  .launch-card h2, .launch-card p {
+    margin-bottom: 0;
+  }
+  #launchBtn {
+    width: auto;
+    margin-left: 20px;
+  }
 }
 </style>
 </head>
@@ -114,16 +164,15 @@ body {
 
 <div id="player">
 
-  <!-- VIDEO WRAPPER -->
+  <!-- VIDEO WRAPPER INTERFACE SLOT -->
   <div id="videoWrap">
-    <!-- playsinline forces Safari mobile to stream inline instead of breaking into native players -->
-    <video
-      id="vid"
-      controls
-      playsinline
-      webkit-playsinline
-      preload="metadata">
-    </video>
+    <div class="launch-card">
+      <div>
+        <h2 id="quarterTitle">Quarter 1</h2>
+        <p>AFL Grand Final 2021<br>Demons v Bulldogs</p>
+      </div>
+      <a id="launchBtn" href="https://youtu.be" target="_blank">▶ Watch Stream</a>
+    </div>
   </div>
 
   <!-- BOTTOM QUARTER SWITCHER -->
@@ -137,51 +186,30 @@ body {
 </div>
 
 <script>
-/* =========================================
-   STREAM DATA SOURCES (Your 4 Exact Links)
-   ========================================= */
+/* ========================================================
+   YOUTUBE BASE LINKS (Your 4 Exact Match Video URLs)
+   ======================================================== */
 const streams = [
-  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/f552906434954ad5bdadf12380d35c4e/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/7041471b658e4b4780b70781edde0e32/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
-  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/07c89172716f42c8bda3f6f8ee150e10/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/713c3a8b292c4c4088a27a3f38948e93/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
-  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/63dfc643ac1d40878097e73abf1d6734/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/25cd9021cb0e4d0a8ffbc4ee405ac4db/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8",
-  "https://afl-vod-multi-005-uptls.akamaized.net/packaging3_f7d8f/out/v1/642654a2922a4f1e82b478f8a082d3d1/ef1d806899ce413791eb3795aa40401b/b4a356d5797943a38e2db18bf7d1a781/177f893fee0140069a51c33c82a328ea/dc70ac4f15c64664acf501ef0c2c4681/index_2.m3u8"
+  "https://youtu.be", // Q1 Link
+  "https://youtu.be", // Q2 Link
+  "https://youtu.be", // Q3 Link
+  "https://youtu.be"  // Q4 Link
 ];
 
-let hls = null;
-const video = document.getElementById("vid");
-const playerContainer = document.getElementById("player");
+const launchBtn = document.getElementById("launchBtn");
+const quarterTitle = document.getElementById("quarterTitle");
 
-/* =========================================
-   MOBILE HLS ENGINE LOADER
-   ========================================= */
-function loadStream(url, autoPlay = false) {
-  if (Hls.isSupported()) {
-    if (hls) hls.destroy();
-    hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      if (autoPlay) video.play();
-    });
-  } 
-  else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = url;
-    video.addEventListener('loadedmetadata', function() {
-      if (autoPlay) video.play();
-    });
-  }
-}
-
-// Initialise index 0 (Quarter 1 link) on startup
-loadStream(streams[0], false);
-
-/* =========================================
-   CHANGE QUARTER
-   ========================================= */
+/* ========================================================
+   SWITCH QUARTER PATHS Dynamically
+   ======================================================== */
 function go(num) {
-  const wasPlaying = !video.paused;
-  loadStream(streams[num], wasPlaying);
+  // Update the destination hyperlink to update instantly for your tap
+  launchBtn.href = streams[num];
+  
+  // Update UI Card Text display context
+  quarterTitle.textContent = "Quarter " + (num + 1);
 
+  // Update button active highlighting states
   for (let i = 0; i < 4; i++) {
     const button = document.getElementById("b" + i);
     if (i === num) {
@@ -191,57 +219,6 @@ function go(num) {
     }
   }
 }
-
-/* =========================================
-   GESTURE CONTROLLER: FULLSCREEN TOGGLE
-   ========================================= */
-async function toggleFullscreen() {
-  const fullscreenActive = document.fullscreenElement || document.webkitFullscreenElement || document.webkitIsFullScreen;
-
-  if (fullscreenActive) {
-    try {
-      if (document.exitFullscreen) {
-        await document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      }
-    } catch (error) {
-      console.log("Exit fullscreen failed:", error);
-    }
-    return;
-  }
-
-  try {
-    if (playerContainer.requestFullscreen) {
-      await playerContainer.requestFullscreen({ navigationUI: "hide" });
-    } else if (playerContainer.webkitRequestFullscreen) {
-      playerContainer.webkitRequestFullscreen();
-    } else {
-      if (video.webkitEnterFullscreen) {
-        video.webkitEnterFullscreen();
-      } else {
-        alert("Fullscreen is not supported on this device layout context.");
-      }
-    }
-  } catch (error) {
-    console.log("Fullscreen entry failed:", error);
-  }
-}
-
-/* =========================================
-   MOBILE DOUBLE-TAP GESTURE CAPTURE
-   ========================================= */
-let lastTap = 0;
-video.addEventListener('touchend', function (e) {
-  const currentTime = new Date().getTime();
-  const tapLength = currentTime - lastTap;
-  
-  if (tapLength < 300 && tapLength > 0) {
-    e.preventDefault(); 
-    toggleFullscreen();
-  }
-  lastTap = currentTime;
-});
 </script>
 
 </body>
