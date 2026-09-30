@@ -2,20 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AFL Mobile Player</title>
 
-<meta name="viewport"
-      content="width=device-width,
-               initial-scale=1,
-               viewport-fit=cover">
-
-<title>AFL Video Player</title>
-
-<!-- Include HLS library for cross-browser playback (Chrome, Edge, Firefox, Android) -->
+<!-- Include HLS library for cross-browser mobile playback (Android & Chrome) -->
 <script src="https://jsdelivr.net"></script>
 
 <style>
 * {
   box-sizing: border-box;
+  -webkit-user-select: none; /* Prevents text selection highlights on mobile */
+  user-select: none;
 }
 
 html,
@@ -25,110 +22,74 @@ body {
   width: 100%;
   height: 100%;
   background: #000;
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
 }
 
-/* MAIN PLAYER container */
+/* MAIN MOBILE CONTAINER */
 #player {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #000;
   display: flex;
   flex-direction: column;
+  background: #000;
 }
 
-/* VIDEO WRAPPER */
+/* VIDEO WINDOW */
 #videoWrap {
   position: relative;
   width: 100%;
   flex: 1;
-  background: #000;
   min-height: 0;
+  background: #000;
 }
 
 #vid {
   display: block;
   width: 100%;
   height: 100%;
-  background: #000;
   object-fit: contain;
+  background: #000;
 }
 
-/* OVERLAY FULLSCREEN BUTTON (Top Right Corner) */
-#overlayFsBtn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  transition: opacity 0.3s ease, background 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-#overlayFsBtn:hover {
-  background: rgba(0, 115, 230, 0.9);
-}
-
-/* Class to fade out control overlay when user is inactive */
-.user-inactive {
-  opacity: 0 !important;
-  pointer-events: none;
-}
-
-/* QUARTER BUTTON BAR */
+/* MOBILE NAV BAR */
 #bar {
   display: flex;
   width: 100%;
-  height: 54px;
+  height: 60px; /* Slightly taller for mobile thumb targets */
   background: #111;
   flex-shrink: 0;
   border-top: 1px solid #222;
+  padding-bottom: env(safe-area-inset-bottom); /* iOS home bar protection */
 }
 
 #bar button {
   border: 0;
   margin: 0;
   padding: 0;
-  background: #1a1a1a;
-  color: #aaa;
+  background: #161616;
+  color: #8e8e93;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
+  flex: 1;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.1s ease, color 0.1s ease;
 }
 
-/* QUARTER BUTTONS */
-.quarter {
-  flex: 1;
-  border-right: 1px solid #111;
+#bar button:active {
+  background: #2c2c2e;
 }
 
-.quarter:last-child {
-  border-right: 0;
-}
-
-.quarter.active {
-  background: #0073e6;
+/* ACTIVE QUARTER STATE */
+#bar button.active {
+  background: #007aff; /* Apple standard system blue */
   color: #fff;
 }
 
-/* TRUE FULLSCREEN SYSTEM OVERRIDES */
+/* FULLSCREEN OVERRIDES */
 #player:fullscreen {
   width: 100vw;
   height: 100vh;
@@ -138,40 +99,24 @@ body {
   height: 100vh;
 }
 
-/* Hide cursor in fullscreen when inactive */
-#player.user-inactive {
-  cursor: none;
-}
-
-/* LANDSCAPE PHONE ADJUSTMENTS */
-@media (orientation: landscape) and (max-height: 500px) {
+/* LANDSCAPE ORIENTATION CONFIGURATION */
+@media (orientation: landscape) {
   #bar {
-    height: 44px;
+    height: 48px;
   }
   #bar button {
     font-size: 14px;
   }
-  #overlayFsBtn {
-    top: 10px;
-    right: 10px;
-    width: 38px;
-    height: 38px;
-    font-size: 16px;
-  }
 }
 </style>
 </head>
-
 <body>
 
 <div id="player">
 
-  <!-- VIDEO AREA -->
-  <div id="videoWrap" id="vContainer">
-    
-    <!-- Floating Fullscreen Button -->
-    <button id="overlayFsBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
-
+  <!-- VIDEO WRAPPER -->
+  <div id="videoWrap">
+    <!-- playsinline stops iOS from automatically taking over the screen natively -->
     <video
       id="vid"
       controls
@@ -181,7 +126,7 @@ body {
     </video>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- BOTTOM QUARTER SWITCHER -->
   <div id="bar">
     <button class="quarter active" id="b0" onclick="go(0)">Q1</button>
     <button class="quarter" id="b1" onclick="go(1)">Q2</button>
@@ -193,7 +138,7 @@ body {
 
 <script>
 /* =========================================
-   VIDEO STREAMS
+   STREAM DATA SOURCES
    ========================================= */
 const streams = [
   "https://akamaized.net",
@@ -205,16 +150,13 @@ const streams = [
 let hls = null;
 const video = document.getElementById("vid");
 const playerContainer = document.getElementById("player");
-const overlayFsBtn = document.getElementById("overlayFsBtn");
 
 /* =========================================
-   STREAM ENGINE LOADER
+   MOBILE HLS ENGINE LOADER
    ========================================= */
 function loadStream(url, autoPlay = false) {
   if (Hls.isSupported()) {
-    if (hls) {
-      hls.destroy();
-    }
+    if (hls) hls.destroy();
     hls = new Hls();
     hls.loadSource(url);
     hls.attachMedia(video);
@@ -230,8 +172,8 @@ function loadStream(url, autoPlay = false) {
   }
 }
 
-// Start playing the match Q1 structure initially
-loadStream(streams[0], false);
+// Initialise Q1
+loadStream(streams, false);
 
 /* =========================================
    CHANGE QUARTER
@@ -251,10 +193,10 @@ function go(num) {
 }
 
 /* =========================================
-   SMART FULLSCREEN API IMPLEMENTATION
+   GESTURE CONTROLLER: FULLSCREEN TOGGLE
    ========================================= */
 async function toggleFullscreen() {
-  const fullscreenActive = document.fullscreenElement || document.webkitFullscreenElement;
+  const fullscreenActive = document.fullscreenElement || document.webkitFullscreenElement || document.webkitIsFullScreen;
 
   if (fullscreenActive) {
     try {
@@ -264,7 +206,7 @@ async function toggleFullscreen() {
         document.webkitExitFullscreen();
       }
     } catch (error) {
-      console.log("Could not exit fullscreen:", error);
+      console.log("Exit fullscreen failed:", error);
     }
     return;
   }
@@ -278,55 +220,27 @@ async function toggleFullscreen() {
       if (video.webkitEnterFullscreen) {
         video.webkitEnterFullscreen();
       } else {
-        alert("Fullscreen is not supported on this device browser.");
+        alert("Fullscreen is not supported on this device.");
       }
     }
   } catch (error) {
-    console.log("Fullscreen activation failed:", error);
+    console.log("Fullscreen entry failed:", error);
   }
 }
-
-function updateFullscreenButton() {
-  const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  if (isFullscreen) {
-    overlayFsBtn.textContent = "✕";
-    overlayFsBtn.title = "Exit Fullscreen";
-  } else {
-    overlayFsBtn.textContent = "⛶";
-    overlayFsBtn.title = "Fullscreen";
-  }
-}
-
-document.addEventListener("fullscreenchange", updateFullscreenButton);
-document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
 
 /* =========================================
-   INTELLIGENT UI FADE FUNCTION (Hides button when watching)
+   MOBILE DOUBLE-TAP GESTURE CAPTURE
    ========================================= */
-let fadeTimeout;
-function resetUiFadeTimer() {
-  // Reveal button and cursor instantly
-  overlayFsBtn.classList.remove("user-inactive");
-  playerContainer.classList.remove("user-inactive");
+let lastTap = 0;
+video.addEventListener('touchend', function (e) {
+  const currentTime = new Date().getTime();
+  const tapLength = currentTime - lastTap;
   
-  clearTimeout(fadeTimeout);
-  
-  // Hide after 2 seconds of no movement
-  fadeTimeout = setTimeout(() => {
-    if (!video.paused) { // Only hide elements if video is playing
-      overlayFsBtn.classList.add("user-inactive");
-      playerContainer.classList.add("user-inactive");
-    }
-  }, 2000);
-}
-
-// Event hooks to track user activity zones
-playerContainer.addEventListener("mousemove", resetUiFadeTimer);
-playerContainer.addEventListener("touchstart", resetUiFadeTimer);
-video.addEventListener("play", resetUiFadeTimer);
-video.addEventListener("pause", () => {
-  overlayFsBtn.classList.remove("user-inactive");
-  playerContainer.classList.remove("user-inactive");
+  if (tapLength < 300 && tapLength > 0) {
+    e.preventDefault(); // Stop native browser scaling zooms
+    toggleFullscreen();
+  }
+  lastTap = currentTime;
 });
 </script>
 
